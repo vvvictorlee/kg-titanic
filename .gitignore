@@ -100,5 +100,9 @@ ENV/
 # mypy
 .mypy_cache/
 
-# vscide
+# vscode
 .vscode
+
+# Other
+results.csv
+saved_models/weights.best.hdf5
