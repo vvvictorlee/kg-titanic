@@ -31,7 +31,7 @@ def simplify_fares(df):
 data = simplify_fares(data)
 
 def create_family(df):
-    df.Family = df.Parch + df.SibSp + 1
+    df['Family'] = df.Parch + df.SibSp + 1
     return df
 
 family = create_family(data).Family
@@ -49,24 +49,25 @@ print(X_full.head())
 
 # Splitting the data
 surv = data.Survived
-X_train = X_full.values[:700]
-y_train = surv.values[:700]
-X_val = X_full.values[701:890]
-y_val = surv.values[701:890]
+X_train = X_full.values[:712]
+y_train = surv.values[:712]
+X_val = X_full.values[713:890]
+y_val = surv.values[713:890]
 X_test = X_full.values[891:]
 
 checkpointer = ModelCheckpoint(filepath='saved_models/weights.best.hdf5', 
                                verbose=1, save_best_only=True)
 
 model = Sequential()
-model.add(Dense(16, activation='relu', input_dim = 21))
+model.add(Dense(6, activation='relu', input_dim = 21))
+model.add(Dense(3, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 model.summary()
-model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+model.compile(loss='binary_crossentropy', optimizer='Adam', metrics=['accuracy'])
 
 model.fit(X_train, y_train,
           validation_data=(X_val, y_val), 
-          epochs=40, batch_size=32,
+          epochs=120, batch_size=32,
           callbacks=[checkpointer])
 
 model.load_weights('saved_models/weights.best.hdf5')
