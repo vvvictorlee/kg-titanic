@@ -9,7 +9,7 @@ data_test = pd.read_csv('data/test.csv')
 
 data = data_train.append(data_test, ignore_index=True)
 
-# Cleaning
+# Cleaning and feature engineering
 def simplify_ages(df):
     df.Age = df.Age.fillna(-0.5)
     bins = (-1, 0, 5, 12, 18, 25, 35, 60, 120)
@@ -30,6 +30,12 @@ def simplify_fares(df):
 
 data = simplify_fares(data)
 
+def create_family(df):
+    df.Family = df.Parch + df.SibSp + 1
+    return df
+
+family = create_family(data).Family
+
 # Selecting features
 sex = pd.Series( np.where( data.Sex == 'male', 1 , 0 ) , name = 'Sex' )
 embarked = pd.get_dummies( data.Embarked, prefix='Embarked' )
@@ -37,7 +43,7 @@ pclass = pd.get_dummies( data.Pclass, prefix='Pclass' )
 fare = pd.get_dummies( data.Fare, prefix='Fare' )
 age = pd.get_dummies( data.Age, prefix='Age' )
 
-X_full = pd.concat([sex, embarked, pclass, fare, age], axis=1)
+X_full = pd.concat([sex, embarked, pclass, fare, age, family], axis=1)
 
 print(X_full.head())
 
@@ -53,7 +59,7 @@ checkpointer = ModelCheckpoint(filepath='saved_models/weights.best.hdf5',
                                verbose=1, save_best_only=True)
 
 model = Sequential()
-model.add(Dense(32, activation='relu', input_dim = 20))
+model.add(Dense(16, activation='relu', input_dim = 21))
 model.add(Dense(1, activation='sigmoid'))
 model.summary()
 model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
@@ -65,7 +71,6 @@ model.fit(X_train, y_train,
 
 model.load_weights('saved_models/weights.best.hdf5')
 output = model.predict(X_test)
-
 
 f = open('results.csv', 'w')
 f.write('PassengerID,Survived\n')
